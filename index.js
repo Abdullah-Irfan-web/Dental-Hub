@@ -24,6 +24,7 @@ dotenv.config({path:'./config.env'})
  const Cart=require('./Model/Cart');
  const Address = require("./Model/Address");
  const Order = require("./Model/Order");
+ const Otp = require("./Model/Otp");
  
 
 const DB=process.env.MONGO_URI
@@ -166,6 +167,7 @@ app.get("/cart", async (req, res) => {
   currentUser="";
   }
   try {
+   // console.log(req.session.cart);
     let items = [];
     let total=0;
     if (req.user) {
@@ -810,7 +812,7 @@ app.get("/admin/order/delete/:id", async (req, res) => {
 app.post("/login", async (req, res, next) => {
   const oldCart = req.session.cart; 
   passport.authenticate("local", async (err, user, info) => {
-    if (err || !user) return res.status(400).json({ message: "Login failed" });
+    if (err || !user) return res.status(400).json({ message: "Login failed! Invalid Credentials" });
 
     req.logIn(user, async (err) => {
       if (err) return res.status(500).json({ message: "Error during login" });
@@ -842,6 +844,90 @@ app.post("/login", async (req, res, next) => {
     });
   })(req, res, next);
 });
+
+
+app.get("/forgot", (req, res) => {
+  res.render("forgot"); // ejs file with email input
+});
+
+
+app.post("/forgot", async (req, res) => {
+  const { email } = req.body;
+  const userr = await user.findOne({ email });
+  if (!userr) {
+    return res.send("No user with this email");
+  }
+
+  // generate 6 digit otp
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // save in DB
+  
+  await Otp.create({ email, otp: otpCode });
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "abd.irfankhan7007@gmail.com",
+      pass: "ducvajxuizftpltm" // use App Password, not Gmail password
+    }
+  });
+  // send email
+  try {
+    await transporter.sendMail({
+      from: "abd.irfankhan7007@gmail.com",
+      to: email,
+      subject: "Password Reset OTP",
+      text: `Your OTP for password reset is: ${otpCode}`
+    });
+  
+    // ✅ Only render if mail is sent successfully
+    res.render("verify_otp", { email });
+  
+  } catch (err) {
+    console.error("Error sending mail:", err);
+    res.status(500).send("Failed to send OTP. Please try again later.");
+  }
+
+
+});
+
+
+app.post("/reset", async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+ 
+
+  const record = await Otp.findOne({ email, otp });
+  if (!record) {
+    return res.send("Invalid or expired OTP");
+  }
+
+  // update password
+  const userr = await user.findOne({ email });
+  if (!userr) return res.send("User not found");
+
+  
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash(newPassword, salt);
+  userr.password = hash;
+  await userr.save();
+
+  // delete used OTP
+  await Otp.deleteMany({ email });
+  notifier.notify({
+    title: 'Message!',
+    message: 'Password Reset Successfully',
+  
+    sound: true,
+    wait: true
+  })
+
+  res.redirect('/login');
+});
+
+
+
+
 
 
     app.get('/logout', function(req, res, next) {
@@ -931,23 +1017,45 @@ app.post("/login", async (req, res, next) => {
       
 
       // Search products
-app.post("/search", async (req, res) => {
-  try {
-    const searchTerm = req.body.searchTerm;
+// app.post("/search", async (req, res) => {
+//   try {
+//     const searchTerm = req.body.searchTerm;
 
-    // Case-insensitive partial match
+//     // Case-insensitive partial match
+//     const Products = await product.find({
+//       productName: { $regex: searchTerm, $options: "i" }
+//     });
+
+//     res.render("searchResults", {
+//       Products,
+//       searchTerm
+//     });
+
+//   } catch (err) {
+//     console.error("Search error:", err);
+//     res.status(500).send("Error while searching products");
+//   }
+// });
+
+
+
+
+app.get("/search-suggest", async (req, res) => {
+  try {
+    const searchTerm = req.query.q;
+
+    if (!searchTerm) {
+      return res.json([]); // return empty array if no query
+    }
+
     const Products = await product.find({
       productName: { $regex: searchTerm, $options: "i" }
-    });
+    }).limit(10); // limit for suggestions
 
-    res.render("searchResults", {
-      Products,
-      searchTerm
-    });
-
+    res.json(Products); // return JSON instead of rendering
   } catch (err) {
-    console.error("Search error:", err);
-    res.status(500).send("Error while searching products");
+    console.error("Search suggestion error:", err);
+    res.status(500).json({ error: "Error fetching suggestions" });
   }
 });
 

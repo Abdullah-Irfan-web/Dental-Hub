@@ -38,20 +38,20 @@
                    
                     <a href="/cart" class="btn px-0 ml-2">
                         <i class="fas fa-shopping-cart text-dark"><span style="margin-left: 3px;">Cart</span></i>
-                            </a>
+                          </a>
 
-                            <div class="ml-3 mt-1 mb-1 text-left">
-                                <form >
-                                    <div class="input-group">
-                                        <input type="text" name="searchTerm" id="searchBox" class="form-control" placeholder="Search for products">
-                                        <div class="input-group-append">
-                                           
-                                        </div>
+                          <div class="ml-3 mt-1 mb-1 text-left">
+                            <form >
+                                <div class="input-group">
+                                    <input type="text" name="searchTerm" id="searchBox" class="form-control" placeholder="Search for products">
+                                    <div class="input-group-append">
+                                       
                                     </div>
-                                </form>
-                                <ul id="suggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
-                
-                            </div>
+                                </div>
+                            </form>
+                            <ul id="suggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
+            
+                        </div>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
                     <span class="h1 text-uppercase text-dark bg-primary px-2 ml-n1">Hub</span>
                 </a>
             </div>
-          
+            
  <div class="col-lg-4 col-6 text-left">
     <form >
         <div class="input-group">
@@ -104,13 +104,8 @@
                             <a href="/" class="nav-item nav-link ">Home</a>
                            
                             <a href="#footer" class="nav-item nav-link">Contact</a>
-                            <%if(currentUser!==""){%>
-                            <a href="/myorders" class="nav-item nav-link">My Orders</a>
-                            <a href="/logout" class="nav-item nav-link">Logout</a>
-                            <%} else {%>
-                            <a href="/login" class="nav-item nav-link">Login</a>
+                            <a href="/login" class="nav-item nav-link active">Login</a>
                             <a href="/signup" class="nav-item nav-link">Sign Up</a>
-                            <% }%>
                         </div>
                         <div class="navbar-nav ml-auto py-0 d-none d-lg-block">
                             
@@ -125,42 +120,33 @@
     </div>
     <!-- Navbar End -->
 
-    <div class="container-fluid pt-5 pb-3">
-        <h2 class="section-title position-relative text-uppercase mx-xl-5 mb-4"><span class="bg-secondary pr-3">All Stationary Products</span></h2>
-        <div class="row px-xl-5">
-            <% Products.forEach(product => { %>
-                <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
-                    <div style="height: 470px;" class="product-item bg-light mb-4">
-                        <div class="product-img position-relative overflow-hidden">
-                            <img class="img-fluid w-100" src="/img/<%=product.img%>" alt="">
-                            <div class="product-action">
-                                <button class="add-to-cart btn btn-outline-dark" data-id="<%= product._id %>">Add to Cart</button>
-                           
-                                <!-- <a class="btn btn-outline-dark" href="">Add To Cart</a> -->
-                                <a class="btn btn-outline-dark " href="/detail/<%=product._id%>">View Product</a>
-                               
-                            </div>
-                        </div>
-                        <div class="text-center py-4">
-                            <a class="h6 text-decoration-none text-truncate" href=""><%=product.productName%></a>
-                            <div class="d-flex align-items-center justify-content-center mt-2">
-                                <h5>₹<%=product.price%></h5><h6 class="text-muted ml-2"><del>₹<%=product.price+50%></del></h6>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-center mb-1">
-                                <small class="fa fa-star text-primary mr-1"></small>
-                                <small class="fa fa-star text-primary mr-1"></small>
-                                <small class="fa fa-star text-primary mr-1"></small>
-                                <small class="fa fa-star text-primary mr-1"></small>
-                                <small class="fa fa-star text-primary mr-1"></small>
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-               <%})%>
+
+
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-md-6 col-lg-5">
+          <h2 class="text-center mb-4">Reset Password</h2>
+          <div class="contact-form bg-light p-4 shadow rounded">
+            <form action="/reset" method="post">
+              <!-- Hidden Email -->
+              <input type="hidden" name="email" value="<%= email %>" />
+      
+              <div class="form-group mb-3">
+                <input name="otp" type="text" class="form-control" placeholder="Enter OTP" maxlength="6" required />
+              </div>
+              <div class="form-group mb-3">
+                <input name="newPassword" type="password" class="form-control" placeholder="Enter New Password" required />
+              </div>
+      
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-block">Change Password</button>
+              </div>
+            </form>
+          </div>
         </div>
-    </div>
-    <div id="footer" class="container-fluid bg-dark text-secondary mt-5 pt-5">
+      </div>
+      
+
+      <div id="footer" class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
@@ -232,14 +218,11 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
 
+<script>
 
+    
 
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <script src="js/main.js"></script>
-    <script>
-
-const searchBox = document.getElementById("searchBox");
+ const searchBox = document.getElementById("searchBox");
   const suggestions = document.getElementById("suggestions");
   let timeout = null;
 
@@ -284,35 +267,19 @@ const searchBox = document.getElementById("searchBox");
 
 
 
-        document.querySelectorAll(".add-to-cart").forEach(button => {
-          button.addEventListener("click", async () => {
-            console.log("jashdsagdsgadygasuhdg")
-            const productId = button.getAttribute("data-id");
-        
-            try {
-              const res = await fetch("/cart/add", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ productId, quantity: 1 })
-              });
-        
-              const data = await res.json();
-        
-              if (data.success) {
-                alert(data.message); 
-                // 🚀 Instead of alert, you can update cart counter in navbar
-              } else {
-                alert("Error adding to cart");
-              }
-        
-            } catch (err) {
-              console.error(err);
-              alert("Something went wrong!");
-            }
-          });
-        });
-        </script>
-    </body>
-    </html>
+</script>
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Contact Javascript File -->
+    <script src="mail/jqBootstrapValidation.min.js"></script>
+    <script src="mail/contact.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>
