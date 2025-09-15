@@ -531,13 +531,13 @@ app.get("/orderconfirm", async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "abd.irfankhan7007@gmail.com",
-        pass: "ducvajxuizftpltm" // use App Password, not Gmail password
+        user: "dentalhub7718@gmail.com",
+        pass: "huzdxteyhjybvsbj" // use App Password, not Gmail password
       }
     });
 
     const mailOptions = {
-      from: "abd.irfankhan7007@gmail.com",
+      from: "dentalhub7718@gmail.com",
       to: req.user.useremail,
       subject: "Order Confirmation",
       html: `
@@ -552,10 +552,36 @@ app.get("/orderconfirm", async (req, res) => {
       `
     };
 
+    const adminMail = {
+      from: "dentalhub7718@gmail.com",
+      to: "Hamzahaleem788@gmail.com",
+      subject: "📦 New Order Received",
+      html: `
+        <h2>New Order Received 🔔</h2>
+        <p>Customer: ${req.user.username || req.user.useremail}</p>
+        <p>Email: ${req.user.useremail}</p>
+        <p>Delivery Address: ${address.fullname}, ${address.street}, ${address.city}, ${address.state}, ${address.zip}</p>
+        <ul>
+          ${order.items.map(it => `<li>${it.product.productName} - Qty: ${it.quantity} - Price: ${it.product.price}</li>`).join("")}
+        </ul>
+        <p><strong>Total: ₹${total}</strong></p>
+        <p>Status: ${order.status}</p>
+      `
+    };
+
+
     transporter.sendMail(mailOptions, (err, info) => {
       if (err) console.error("Mail error:", err);
       else console.log("Mail sent:", info.response);
     });
+
+    transporter.sendMail(adminMail, (err, info) => {
+      if (err) console.error("Admin mail error:", err);
+      else console.log("Admin mail sent:", info.response);
+    });
+
+
+
     await order.populate("address");
    
     res.render("orderconfirm", {
