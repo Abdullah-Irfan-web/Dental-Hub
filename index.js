@@ -532,7 +532,7 @@ app.get("/orderconfirm", async (req, res) => {
       service: "gmail",
       auth: {
         user: "dentalhub7718@gmail.com",
-        pass: "huzdxteyhjybvsbj" // use App Password, not Gmail password
+        pass: "cddxntvuevdcuyvh " // use App Password, not Gmail password
       }
     });
 
@@ -560,7 +560,7 @@ app.get("/orderconfirm", async (req, res) => {
         <h2>New Order Received 🔔</h2>
         <p>Customer: ${req.user.username || req.user.useremail}</p>
         <p>Email: ${req.user.useremail}</p>
-        <p>Delivery Address: ${address.fullname}, ${address.street}, ${address.city}, ${address.state}, ${address.zip}</p>
+        <p>Delivery Address:  ${address.city}, ${address.pincode},${address.fullAddress}</p>
         <ul>
           ${order.items.map(it => `<li>${it.product.productName} - Qty: ${it.quantity} - Price: ${it.product.price}</li>`).join("")}
         </ul>
