@@ -11,6 +11,12 @@ const productSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  originalprice:{
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  
   totalStock: {
     type: Number,
     required: true,
@@ -20,7 +26,7 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    maxlength: 200, // keeps it short
+    
   },
   longDescription: {
     type: String,

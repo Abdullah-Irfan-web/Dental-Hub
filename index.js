@@ -705,10 +705,11 @@ app.get("/admin/add-product", (req, res) => {
 app.post("/admin/add-product", upload.single("img"), async (req, res) => {
   try {
    
-    const { productName, price, totalStock, shortDescription, longDescription, category, information } = req.body;
+    const { productName,originalprice, price, totalStock, shortDescription, longDescription, category, information } = req.body;
 
     const newProduct = new product({
       productName,
+      originalprice,
       price,
       totalStock,
       shortDescription,
@@ -791,12 +792,13 @@ app.get("/admin/products/edit/:id", async (req, res) => {
 
 app.post("/admin/products/edit/:id", async (req, res) => {
   try {
-    const { productName, price, totalStock, shortDescription, longDescription, category, information } = req.body;
+    const { productName,originalprice, price, totalStock, shortDescription, longDescription, category, information } = req.body;
 
    
 
     await product.findByIdAndUpdate(req.params.id, {
       productName,
+      originalprice,
       price,
       totalStock,
       shortDescription, 

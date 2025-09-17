@@ -60,9 +60,9 @@
                     </button>
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         <div class="navbar-nav mr-auto py-0">
-                            <a href="/admin" class="nav-item nav-link active">Home</a>
+                            <a href="/admin" class="nav-item nav-link ">Home</a>
                             <a href="/admin/add-product" class="nav-item nav-link">Add Product</a>
-                            <a href="/admin/products" class="nav-item nav-link">View Products</a>
+                            <a href="/admin/products" class="nav-item nav-link active">View Products</a>
                             <a href="/logout" class="nav-item nav-link">Logout</a>
                          
                         </div>
@@ -89,6 +89,7 @@
                 <th>Image</th>
                 <th>Name</th>
                 <th>Description</th>
+                <th>OrgPrice</th>
                 <th>Price</th>
                 <th>Stock</th>
                 <th>Category</th>
@@ -101,13 +102,14 @@
                   <td><img src="/img/<%= product.img %>" alt="<%= product.productName %>" width="60"></td>
                   <td><%= product.productName %></td>
                   <td><%= product.shortDescription %></td>
+                  <td>₹<%= product.originalprice %></td>
                   <td>₹<%= product.price %></td>
                   <td><%=product.totalStock%></td>
                   <td><%=product.category%></td>
                   
                   <td>
                     <a href="/admin/products/edit/<%= product._id %>" class="btn btn-sm btn-warning">Edit</a>
-                    <a href="/admin/products/delete/<%= product._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this product?')">Delete</a>
+                    <a href="/admin/products/delete/<%= product._id %>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('Delete this product?')">Delete</a>
                   </td>
                 </tr>
               <% }) %>
