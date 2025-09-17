@@ -233,16 +233,46 @@
                       <% order.items.forEach(item => { %>
                         <tr>
                           <td class="text-center">
-                            <img src="/img/<%= item.img %>" alt="<%= item.productName %>" width="60" class="rounded">
+                            <% if (item.img) { %>
+                              <img src="/img/<%= item.img %>" 
+                                   alt="<%= item.productName %>" 
+                                   width="60" class="rounded">
+                            <% } else { %>
+                              <span class="text-muted">Image N/A</span>
+                            <% } %>
                           </td>
-                          <td><%= item.productName %></td>
-                          <td>₹<%= item.price %></td>
+                    
+                          <td>
+                            <% if (item.productName && item.price !== null) { %>
+                              <%= item.productName %>
+                            <% } else { %>
+                              <span class="text-danger">Product Deleted</span>
+                            <% } %>
+                          </td>
+                    
+                          <td>
+                            <% if (item.price !== null) { %>
+                              ₹<%= item.price %>
+                            <% } else { %>
+                              N/A
+                            <% } %>
+                          </td>
+                    
                           <td><%= item.quantity %></td>
-                          <td>₹<%= item.subtotal %></td>
+                    
+                          <td>
+                            <% if (item.subtotal !== null) { %>
+                              ₹<%= item.subtotal %>
+                            <% } else { %>
+                              N/A
+                            <% } %>
+                          </td>
+                    
                           <td><%= order.status %></td>
                         </tr>
                       <% }) %>
                     </tbody>
+                    
                   </table>
                 </div>
               </div>

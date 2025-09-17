@@ -613,31 +613,44 @@ app.get("/myorders", async (req, res) => {
 
     // Fetch all orders for user
     const orders = await Order.find({ userEmail: req.user.useremail })
-      .populate("items.product") // only populate product
-      .sort({ createdAt: -1 });
+  .populate("items.product") // only populate product
+  .sort({ createdAt: -1 });
 
-    // Format data
-    const formattedOrders = orders.map(order => {
-      let total = 0;
-      const items = order.items.map(i => {
-        const subtotal = i.product.price * i.quantity;
-        total += subtotal;
-        return {
-          productName: i.product.productName,
-          price: i.product.price,
-          img: i.product.img,
-          quantity: i.quantity,
-          subtotal
-        };
-      });
+const formattedOrders = orders.map(order => {
+  let total = 0;
+
+  const items = order.items.map(i => {
+    if (i.product) {
+      // Product still exists
+      const subtotal = i.product.price * i.quantity;
+      total += subtotal;
       return {
-        id: order._id,
-        status: order.status,
-        createdAt: order.createdAt,
-        items,
-        total
+        productName: i.product.productName,
+        price: i.product.price,
+        img: i.product.img,
+        quantity: i.quantity,
+        subtotal
       };
-    });
+    } else {
+      // Product was deleted
+      return {
+        productName: "Product Deleted",
+        price: null,
+        img: null,
+        quantity: i.quantity,
+        subtotal: null
+      };
+    }
+  });
+
+  return {
+    id: order._id,
+    status: order.status,
+    createdAt: order.createdAt,
+    items,
+    total
+  };
+});
 
     res.render("myorder", {
       orders: formattedOrders,

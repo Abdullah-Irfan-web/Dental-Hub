@@ -131,15 +131,44 @@
                       <% order.items.forEach(item => { %>
                         <tr>
                           <td class="text-center">
-                            <img src="/img/<%= item.product.img %>" alt="<%= item.productName %>" width="60" class="rounded">
+                            <% if (item.product) { %>
+                              <img src="/img/<%= item.product.img %>" 
+                                   alt="<%= item.product.productName %>" 
+                                   width="60" class="rounded">
+                            <% } else { %>
+                              <span class="text-muted">Image N/A</span>
+                            <% } %>
                           </td>
-                          <td><%= item.product.productName %></td>
-                          <td>₹<%= item.product.price %></td>
+                    
+                          <td>
+                            <% if (item.product) { %>
+                              <%= item.product.productName %>
+                            <% } else { %>
+                              <span class="text-danger">Product Deleted</span>
+                            <% } %>
+                          </td>
+                    
+                          <td>
+                            <% if (item.product) { %>
+                              ₹<%= item.product.price %>
+                            <% } else { %>
+                              N/A
+                            <% } %>
+                          </td>
+                    
                           <td><%= item.quantity %></td>
-                          <td>₹<%= item.quantity*item.product.price %></td>
+                    
+                          <td>
+                            <% if (item.product) { %>
+                              ₹<%= item.quantity * item.product.price %>
+                            <% } else { %>
+                              N/A
+                            <% } %>
+                          </td>
                         </tr>
                       <% }) %>
                     </tbody>
+                    
                   </table>
                 </div>
               </div>
