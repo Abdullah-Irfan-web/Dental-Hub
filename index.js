@@ -10,6 +10,8 @@ const session=require('express-session');
 const dotenv=require("dotenv");
 const notifier = require('node-notifier');
 const nodemailer = require("nodemailer");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
 app.set('views',path.join(__dirname,'views'));
 app.set('view engine','ejs');
@@ -91,10 +93,21 @@ app.use(passport.session());
 
 
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "public/img/"),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_KEY,
+  api_secret: process.env.CLOUD_SECRET,
 });
+
+// Cloudinary storage setup
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "products", // folder name in Cloudinary
+    allowed_formats: ["jpg", "jpeg", "png","webp"],
+  },
+});
+
 const upload = multer({ storage });
 
 
@@ -167,7 +180,7 @@ app.get("/cart", async (req, res) => {
   currentUser="";
   }
   try {
-   // console.log(req.session.cart);
+    console.log(req.session.cart);
     let items = [];
     let total=0;
     if (req.user) {
@@ -729,7 +742,7 @@ app.post("/admin/add-product", upload.single("img"), async (req, res) => {
       longDescription,
       category,
       information,
-      img: req.file ? req.file.filename : "default.jpg"
+      img: req.file ? req.file.path : "https://via.placeholder.com/150"
     });
 
     await newProduct.save();
@@ -803,22 +816,28 @@ app.get("/admin/products/edit/:id", async (req, res) => {
 });
 
 
-app.post("/admin/products/edit/:id", async (req, res) => {
+app.post("/admin/products/edit/:id",upload.single("img"), async (req, res) => {
   try {
+    if (!req.user || req.user.role!=="admin") return res.redirect("/login");
     const { productName,originalprice, price, totalStock, shortDescription, longDescription, category, information } = req.body;
 
-   
-
-    await product.findByIdAndUpdate(req.params.id, {
+    let updateData = {
       productName,
       originalprice,
       price,
       totalStock,
-      shortDescription, 
-      longDescription, 
-      category, 
-      information
-    });
+      shortDescription,
+      longDescription,
+      category,
+      information,
+    };
+
+
+   if (req.file) {
+      updateData.img = req.file.path;
+    }
+
+    await product.findByIdAndUpdate(req.params.id, updateData);
 
     res.redirect("/admin/products");
   } catch (err) {

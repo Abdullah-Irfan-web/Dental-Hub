@@ -75,7 +75,7 @@
 
     <div class="container my-5">
         <h2 class="mb-4 text-center">Edit Product</h2>
-        <form method="POST" action="/admin/products/edit/<%= products._id %>">
+        <form method="POST" action="/admin/products/edit/<%= products._id %>" enctype="multipart/form-data">
             <div class="form-group">
                 <label>Product Name</label>
                 <input type="text" name="productName" class="form-control" value="<%=products.productName%>" required>
@@ -114,6 +114,10 @@
                 <textarea name="information" class="form-control">
                     <%=products.information%>
                 </textarea>
+              </div>
+              <div class="form-group">
+                <label>Upload Image</label>
+                <input type="file" name="img"  class="form-control-file">
               </div>
              
           <button type="submit" class="btn btn-primary">Update Product</button>

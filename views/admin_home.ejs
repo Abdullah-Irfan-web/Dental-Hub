@@ -132,7 +132,7 @@
                         <tr>
                           <td class="text-center">
                             <% if (item.product) { %>
-                              <img src="/img/<%= item.product.img %>" 
+                              <img src="<%= item.product.img %>" 
                                    alt="<%= item.product.productName %>" 
                                    width="60" class="rounded">
                             <% } else { %>
@@ -195,7 +195,7 @@
             <% } %>
             
             <% if (currentPage < totalPages) { %>
-              <li class="page-item"><a class="page-link" href="/admin/orders?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a></li>
+              <li class="page-item"><a class="page-link" href="/admin/?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a></li>
             <% } %>
           </ul>
         </nav>

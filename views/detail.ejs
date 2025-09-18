@@ -43,13 +43,13 @@
                          <div class="ml-3 mt-1 mb-1 text-left">
                             <form >
                                 <div class="input-group">
-                                    <input type="text" name="searchTerm" id="searchBox" class="form-control" placeholder="Search for products">
+                                    <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
                                     <div class="input-group-append">
                                        
                                     </div>
                                 </div>
                             </form>
-                            <ul id="suggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
+                            <ul  class="suggestions list-group position-absolute w-100" style="z-index: 1000;"></ul>
             
                         </div>
                 </div>
@@ -66,13 +66,13 @@
             <div class="col-lg-4 col-6 text-left">
                 <form >
                     <div class="input-group">
-                        <input type="text" name="searchTerm" id="searchBox" class="form-control" placeholder="Search for products">
+                        <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
                         <div class="input-group-append">
                            
                         </div>
                     </div>
                 </form>
-                <ul id="suggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
+                <ul  class="suggestions list-group position-absolute w-100" style="z-index: 1000;"></ul>
 
             </div>
 
@@ -139,7 +139,7 @@
                 <div id="product-carousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner bg-light">
                         <div class="carousel-item active">
-                            <img class="w-100 h-100" src="/img/<%=Pro.img%>" alt="Image">
+                            <img class="w-100 h-100" src="<%=Pro.img%>" alt="Image">
                         </div>
                         <!-- <div class="carousel-item">
                             <img class="w-100 h-100" src="img/product-2.jpg" alt="Image">
@@ -239,7 +239,7 @@
                                 </button>
                             </div>
                         </div> -->
-                        <button class="add-to-cart btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To
+                        <button class="add-to-cart btn btn-primary px-3" data-id="<%= Pro._id %>"><i class="fa fa-shopping-cart mr-1"></i> Add To
                             Cart</button>
                     </div>
                     <div class="d-flex pt-2">
@@ -605,47 +605,52 @@
 
 
 
-const searchBox = document.getElementById("searchBox");
-  const suggestions = document.getElementById("suggestions");
-  let timeout = null;
 
-  searchBox.addEventListener("input", () => {
-    clearTimeout(timeout);
+const searchBoxes = document.querySelectorAll(".searchBox");
+  const suggestionLists = document.querySelectorAll(".suggestions");
 
-    const query = searchBox.value.trim();
+  searchBoxes.forEach((searchBox, index) => {
+    const suggestions = suggestionLists[index]; // match corresponding <ul>
+    let timeout = null;
 
-    if (!query) {
-      suggestions.innerHTML = "";
-      return;
-    }
+    searchBox.addEventListener("input", () => {
+      clearTimeout(timeout);
 
-    timeout = setTimeout(async () => {
-      try {
-        const response = await fetch(`/search-suggest?q=${encodeURIComponent(query)}`);
-        const data = await response.json();
+      const query = searchBox.value.trim();
 
-        // Clear old suggestions
+      if (!query) {
         suggestions.innerHTML = "";
-
-        if (data.length === 0) {
-          suggestions.innerHTML = `<li class="list-group-item">No results</li>`;
-          return;
-        }
-
-        data.forEach(product => {
-          const li = document.createElement("li");
-          li.classList.add("list-group-item", "list-group-item-action");
-          li.textContent = product.productName;
-          li.addEventListener("click", () => {
-            window.location.href = `/detail/${product._id}`;
-          });
-          suggestions.appendChild(li);
-        });
-
-      } catch (err) {
-        console.error("Suggestion fetch error:", err);
+        return;
       }
-    }, 400); // wait 400ms after user stops typing
+
+      timeout = setTimeout(async () => {
+        try {
+          const response = await fetch(`/search-suggest?q=${encodeURIComponent(query)}`);
+          const data = await response.json();
+
+          // Clear old suggestions
+          suggestions.innerHTML = "";
+
+          if (data.length === 0) {
+            suggestions.innerHTML = `<li class="list-group-item">No results</li>`;
+            return;
+          }
+
+          data.forEach(product => {
+            const li = document.createElement("li");
+            li.classList.add("list-group-item", "list-group-item-action");
+            li.textContent = product.productName;
+            li.addEventListener("click", () => {
+              window.location.href = `/detail/${product._id}`;
+            });
+            suggestions.appendChild(li);
+          });
+
+        } catch (err) {
+          console.error("Suggestion fetch error:", err);
+        }
+      }, 400); // debounce
+    });
   });
 
 

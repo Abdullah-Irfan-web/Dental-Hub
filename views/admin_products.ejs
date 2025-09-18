@@ -99,7 +99,7 @@
             <tbody>
               <% products.forEach(product => { %>
                 <tr>
-                  <td><img src="/img/<%= product.img %>" alt="<%= product.productName %>" width="60"></td>
+                  <td><img src="<%= product.img %>" alt="<%= product.productName %>" width="60"></td>
                   <td><%= product.productName %></td>
                   <td><%= product.shortDescription %></td>
                   <td>₹<%= product.originalprice %></td>
@@ -120,17 +120,17 @@
         <nav aria-label="Orders pagination">
             <ul class="pagination justify-content-center">
               <% if (currentPage > 1) { %>
-                <li class="page-item"><a class="page-link" href="/admin?page=<%= currentPage - 1 %>&search=<%= search %>">Prev</a></li>
+                <li class="page-item"><a class="page-link" href="/admin/products?page=<%= currentPage - 1 %>&search=<%= search %>">Prev</a></li>
               <% } %>
               
               <% for(let i = 1; i <= totalPages; i++) { %>
                 <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                  <a class="page-link" href="/admin?page=<%= i %>&search=<%= search %>"><%= i %></a>
+                  <a class="page-link" href="/admin/products?page=<%= i %>&search=<%= search %>"><%= i %></a>
                 </li>
               <% } %>
               
               <% if (currentPage < totalPages) { %>
-                <li class="page-item"><a class="page-link" href="/admin/orders?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a></li>
+                <li class="page-item"><a class="page-link" href="/admin/products?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a></li>
               <% } %>
             </ul>
           </nav>
