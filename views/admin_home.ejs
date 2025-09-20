@@ -96,7 +96,11 @@
                 <span>
                   <strong>Order ID:</strong> <%= order._id %><br>
                   <strong>Email:</strong> <%= order.userEmail %><br>
-                  <strong>Address:</strong> <%= order.address.fullAddress %>, <%= order.address.city %>, <%= order.address.pincode %>
+                  <strong>Address:</strong> <%= order.address.fullAddress %>, <%= order.address.city %>, <%= order.address.pincode %><br>
+                  <strong>Payment Status: </strong><%= order.paystatus %><br>
+                  <% if (order.extrainfo) { %>
+                    <strong>Extra Info:</strong> <%= order.extrainfo %><br>
+                  <% } %>
                 </span>
       
                 <div>
@@ -174,8 +178,9 @@
               </div>
       
               <div class="card-footer text-right">
-               
+                <strong class="text-muted">Total : <%=order.total%></strong> <br>
                 <small class="text-muted">Placed on <%= order.createdAt.toDateString() %></small>
+                
               </div>
             </div>
           <% }) %>

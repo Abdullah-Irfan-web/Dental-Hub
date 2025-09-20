@@ -483,7 +483,10 @@ app.get("/placeorder", async (req, res) => {
     }
     let deliveryFee = 0;
     if (!address.city || address.city.toLowerCase() !== "rohtak") {
-      deliveryFee = 90;
+      if(total<2000){
+        deliveryFee = 90;
+      }
+      
     }
   
     res.render("placeorder", {
@@ -518,23 +521,35 @@ app.get("/orderconfirm", async (req, res) => {
     if (!address) return res.redirect("/addaddress");
 
     // fetch cart
+    const paystatus = req.query.paystatus || "cod";
+    const extrainfo = req.query.extrainfo || "";
     let cart = await Cart.findOne({ userEmail: req.user.useremail }).populate("items.product");
     if (!cart || cart.items.length === 0) {
       return res.redirect('/cart');
     }
-
+    for(let item of cart.items){
+      total += item.product.price * item.quantity;
+    }
+   
+    if (!address.city || address.city.toLowerCase() !== "rohtak") {
+      if(total<2000){
+        total = total+90;
+      }
+      
+    }
     // create order
     const order = new Order({
       userEmail: req.user.useremail,
       address: address._id,
       items: cart.items,
       status: "Confirmed",
+      total,
+      paystatus,
+      extrainfo
 
     });
 
-      for(let item of cart.items){
-        total += item.product.price * item.quantity;
-      }
+     
     await order.save();
 
     // empty cart after placing order
@@ -579,6 +594,8 @@ app.get("/orderconfirm", async (req, res) => {
         </ul>
         <p><strong>Total: ₹${total}</strong></p>
         <p>Status: ${order.status}</p>
+        <p>Payment Status: <strong> ${order.paystatus}</strong></p>
+        ${order.extrainfo ? `<p><strong>Extra Info:</strong> ${order.extrainfo}</p>` : ""}
       `
     };
 
