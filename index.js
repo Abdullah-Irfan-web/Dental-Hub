@@ -1094,25 +1094,25 @@ app.post("/reset", async (req, res) => {
       
 
       // Search products
-// app.post("/search", async (req, res) => {
-//   try {
-//     const searchTerm = req.body.searchTerm;
+app.post("/search", async (req, res) => {
+  try {
+    const searchTerm = req.body.searchTerm;
 
-//     // Case-insensitive partial match
-//     const Products = await product.find({
-//       productName: { $regex: searchTerm, $options: "i" }
-//     });
+    // Case-insensitive partial match
+    const Products = await product.find({
+      productName: { $regex: searchTerm, $options: "i" }
+    });
 
-//     res.render("searchResults", {
-//       Products,
-//       searchTerm
-//     });
+    res.render("searchResults", {
+      Products,
+      searchTerm
+    });
 
-//   } catch (err) {
-//     console.error("Search error:", err);
-//     res.status(500).send("Error while searching products");
-//   }
-// });
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).send("Error while searching products");
+  }
+});
 
 
 

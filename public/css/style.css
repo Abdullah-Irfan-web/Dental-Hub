@@ -47,6 +47,7 @@ html {
   line-height: 1.15;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  overflow-x: hidden;   
 }
 
 article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
@@ -4044,6 +4045,25 @@ input[type="button"].btn-block {
   padding-left: 0;
 }
 
+
+.suggestions{
+  max-width: 100%;        /* don't exceed screen width */
+  width: 100%;            /* match input width */
+  left: 0;                /* align with input */
+  right: 0;               /* prevent overflow on the right */
+  
+  overflow-x: hidden;     /* no horizontal scroll */
+  box-sizing: border-box;      
+}
+
+@media (max-width: 576px) {
+  .suggestions li {
+    font-size: 14px; /* make text a bit smaller on phones */
+  }
+  .suggestions {
+    width: 100px;
+  }
+}
 .navbar-nav .dropdown-menu {
   position: static;
   float: none;
@@ -9626,9 +9646,7 @@ a.text-dark:hover, a.text-dark:focus {
 
 /* Show buttons always on smaller devices (tablets & phones) */
 @media (max-width: 992px) {
-  .product-action {
-    background: rgba(256, 255, 255, 0.5);
-  }
+ 
   .product-action a.btn,
   .product-action button.btn {
     opacity: 1 !important;   /* always visible */
@@ -9640,24 +9658,7 @@ a.text-dark:hover, a.text-dark:focus {
 
   /* Stack them vertically for phones */
   @media (max-width: 576px) {
-    .product-action {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-     /* give a light bg */
-     background: rgba(256, 255, 255, 0.5);
-      padding: 0.5rem;
-      border-radius: 8px;
-    }
-
-    .product-action a.btn,
-    .product-action button.btn {
-      width: 50%; 
-      margin: 5px 0 !important; 
-      color:#FFD333;
-      background: #3D464D;
-    }
-  }
+     }
 }
 
 

@@ -109,14 +109,18 @@
                           </a>
 
                           <div class="ml-3 mt-1 mb-1 text-left">
-                            <form >
-                                <div class="input-group">
-                                    <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
-                                    <div class="input-group-append">
-                                       
-                                    </div>
-                                </div>
-                            </form>
+                            <form action="/search" method="post">
+                              <div class="input-group">
+                                  <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
+                                  <div class="input-group-append">
+                                      <Button style="border: none; background: none;" type="submit"> 
+                                          <span class="input-group-text bg-transparent text-primary">
+                                          <i class="fa fa-search"></i>
+                                      </span>
+                                  </Button>
+                                  </div>
+                              </div>
+                          </form>
                             <ul  class="suggestions list-group position-absolute w-100" style="z-index: 1000;"></ul>
             
                         </div>
@@ -134,14 +138,18 @@
             
 
  <div class="col-lg-4 col-6 text-left">
-  <form >
-      <div class="input-group">
-          <input type="text" name="searchTerm" id="searchBox" class="form-control" placeholder="Search for products">
-          <div class="input-group-append">
-             
-          </div>
-      </div>
-  </form>
+  <form action="/search" method="post">
+    <div class="input-group">
+        <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
+        <div class="input-group-append">
+            <Button style="border: none; background: none;" type="submit"> 
+                <span class="input-group-text bg-transparent text-primary">
+                <i class="fa fa-search"></i>
+            </span>
+        </Button>
+        </div>
+    </div>
+</form>
   <ul id="suggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
 
 </div>

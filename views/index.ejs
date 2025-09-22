@@ -41,11 +41,15 @@
 
 
                           <div class="ml-3 mt-1 mb-1 text-left">
-                            <form >
+                            <form action="/search" method="post">
                                 <div class="input-group">
                                     <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
                                     <div class="input-group-append">
-                                       
+                                        <Button style="border: none; background: none;" type="submit"> 
+                                            <span class="input-group-text bg-transparent text-primary">
+                                            <i class="fa fa-search"></i>
+                                        </span>
+                                    </Button>
                                     </div>
                                 </div>
                             </form>
@@ -64,11 +68,15 @@
                 </a>
             </div>
             <div class="col-lg-4 col-6 text-left">
-                <form >
+                <form action="/search" method="post" >
                     <div class="input-group">
                         <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
                         <div class="input-group-append">
-                           
+                            <Button style="border: none; background: none;" type="submit"> 
+                                <span class="input-group-text bg-transparent text-primary">
+                                <i class="fa fa-search"></i>
+                            </span>
+                        </Button>
                         </div>
                     </div>
                 </form>
@@ -226,19 +234,19 @@
         <div class="row px-xl-5">
             <% top.forEach(product => { %>
             <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
+                <a href="/detail/<%= product._id %>" class="text-decoration-none text-dark">
                 <div class="product-item bg-light mb-4">
                     <div class="product-img position-relative overflow-hidden">
                         <img class="img-fluid w-100" src="<%=product.img%>" alt="">
-                        <div class="product-action">
+                        <!-- <div class="product-action">
                             <button class="add-to-cart btn btn-outline-dark" data-id="<%= product._id %>">Add to Cart</button>
                               
-                            <!-- <a class="btn btn-outline-dark" href="">Add To Cart</a> -->
                             <a class="btn btn-outline-dark " href="/detail/<%=product.id%>">View Product</a>
                            
-                        </div>
+                        </div> -->
                     </div>
                     <div class="text-center py-4">
-                        <a class="h6 text-decoration-none text-truncate" href=""><%=product.productName%></a>
+                        <a class="h6 text-decoration-none" href=""><%=product.productName%></a>
                         <div class="d-flex align-items-center justify-content-center mt-2">
                             <h5>₹<%=product.price%></h5><h6 class="text-muted ml-2"><del>₹<%=product.originalprice%></del></h6>
                         </div>
@@ -252,6 +260,7 @@
                         </div>
                     </div>
                 </div>
+                </a>
             </div>
            <%})%>
             
@@ -294,15 +303,16 @@
         <div class="row px-xl-5">
             <% Products.forEach(product => { %>
                 <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
-                    <div class="product-item bg-light mb-4">
+                    <a href="/detail/<%= product._id %>" class="text-decoration-none text-dark">
+                    <div  class="product-item bg-light mb-4">
                         <div class="product-img position-relative overflow-hidden">
                             <img class="img-fluid w-100" src="<%=product.img%>" alt="">
-                            <div class="product-action">
+                            <!-- <div class="product-action">
                                 <button class="add-to-cart btn btn-outline-dark" data-id="<%= product._id %>">Add to Cart</button>
-                                <!-- <a class="btn btn-outline-dark" href="">Add To Cart</a> -->
+                                
                                 <a class="btn btn-outline-dark " href="/detail/<%=product._id%>">View Product</a>
                                
-                            </div>
+                            </div> -->
                         </div>
                         <div class="text-center py-4">
                             <a class="h6 text-decoration-none text-truncate" href=""><%=product.productName%></a>
@@ -319,6 +329,7 @@
                             </div>
                         </div>
                     </div>
+                    </a>
                 </div>
                <%})%>
         </div>
@@ -443,6 +454,7 @@
 const searchBoxes = document.querySelectorAll(".searchBox");
   const suggestionLists = document.querySelectorAll(".suggestions");
 
+
   searchBoxes.forEach((searchBox, index) => {
     const suggestions = suggestionLists[index]; // match corresponding <ul>
     let timeout = null;
@@ -490,36 +502,8 @@ const searchBoxes = document.querySelectorAll(".searchBox");
 
 
 
-        document.querySelectorAll(".add-to-cart").forEach(button => {
-          button.addEventListener("click", async () => {
-            console.log("jashdsagdsgadygasuhdg")
-            const productId = button.getAttribute("data-id");
-        
-            try {
-              const res = await fetch("/cart/add", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ productId, quantity: 1 })
-              });
-        
-              const data = await res.json();
-        
-              if (data.success) {
-                alert(data.message); 
-                // 🚀 Instead of alert, you can update cart counter in navbar
-              } else {
-                alert("Error adding to cart");
-              }
-        
-            } catch (err) {
-              console.error(err);
-              alert("Something went wrong!");
-            }
-          });
-        });
-        </script>
+       
+       </script>
         
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>

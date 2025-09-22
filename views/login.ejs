@@ -41,11 +41,15 @@
                           </a>
 
                           <div class="ml-3 mt-1 mb-1 text-left">
-                            <form >
+                            <form action="/search" method="post">
                                 <div class="input-group">
                                     <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
                                     <div class="input-group-append">
-                                       
+                                        <Button style="border: none; background: none;" type="submit"> 
+                                            <span class="input-group-text bg-transparent text-primary">
+                                            <i class="fa fa-search"></i>
+                                        </span>
+                                    </Button>
                                     </div>
                                 </div>
                             </form>
@@ -65,11 +69,15 @@
             </div>
            
  <div class="col-lg-4 col-6 text-left">
-    <form >
+    <form action="/search" method="post">
         <div class="input-group">
             <input type="text" name="searchTerm"  class="searchBox form-control" placeholder="Search for products">
             <div class="input-group-append">
-               
+                <Button style="border: none; background: none;" type="submit"> 
+                    <span class="input-group-text bg-transparent text-primary">
+                    <i class="fa fa-search"></i>
+                </span>
+            </Button>
             </div>
         </div>
     </form>
