@@ -1,5 +1,7 @@
 const express=require('express');
 const app=express();
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
 const path=require('path');
 const mongoose=require('mongoose');
 const bodyparser=require('body-parser');
@@ -587,6 +589,7 @@ app.get("/orderconfirm", async (req, res) => {
       html: `
         <h2>New Order Received 🔔</h2>
         <p>Customer: ${req.user.username || req.user.useremail}</p>
+        <p>Contact: ${address.contactNumber}</p>
         <p>Email: ${req.user.useremail}</p>
         <p>Delivery Address:  ${address.city}, ${address.pincode},${address.fullAddress}</p>
         <ul>
@@ -831,6 +834,342 @@ app.get("/admin/products/edit/:id", async (req, res) => {
     res.status(500).send("Error loading edit form");
   }
 });
+
+
+app.get("/admin/order/receipt/:id", async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "admin") return res.redirect("/login");
+
+    const order = await Order.findById(req.params.id)
+      .populate("items.product")
+      .populate("address")
+      .lean();
+
+    if (!order) return res.status(404).send("Order not found");
+
+    // Compute totals
+    let productTotal = 0;
+    order.items.forEach(item => {
+      if (item.product && item.product.price) productTotal += item.product.price * item.quantity;
+    });
+    const deliveryFee = (order.total || 0) - productTotal;
+
+    // Prepare PDF response
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename=receipt_${order._id}.pdf`);
+
+    const doc = new PDFDocument({ margin: 50, size: "A4" });
+    doc.pipe(res);
+
+    // Register fonts if present (for proper Rupee glyph)
+    const fontsDir = path.join(__dirname, "public", "fonts");
+    const regularFontPath = path.join(fontsDir, "NotoSans-Regular.ttf");
+    const boldFontPath = path.join(fontsDir, "NotoSans-Bold.ttf");
+
+    const haveFonts = fs.existsSync(regularFontPath) && fs.existsSync(boldFontPath);
+    if (haveFonts) {
+      doc.registerFont("Noto-Regular", regularFontPath);
+      doc.registerFont("Noto-Bold", boldFontPath);
+      doc.font("Noto-Regular");
+    } else {
+      // fallback; Helvetica may not show ₹ correctly on some systems
+      doc.font("Helvetica");
+    }
+
+    const rupee = haveFonts ? "₹" : "Rs.";
+
+    // ---------- Watermark ----------
+    try {
+      const centerX = doc.page.width / 2;
+      const centerY = doc.page.height / 2;
+
+      doc.save();
+      if (haveFonts) doc.font("Noto-Bold");
+      else doc.font("Helvetica-Bold");
+
+      doc.fillColor("#000000");
+      doc.opacity(0.08);
+      doc.fontSize(80);
+
+      // rotate around center
+      doc.rotate(-45, { origin: [centerX, centerY] });
+      doc.text("DentHub", centerX - 150, centerY - 40, {
+        align: "center",
+        width: 300
+      });
+      doc.rotate(45, { origin: [centerX, centerY] }); // rotate back
+      doc.opacity(1);
+      doc.restore();
+    } catch (e) {
+      // continue even if watermark drawing fails
+      doc.restore && doc.restore();
+      doc.opacity && doc.opacity(1);
+    }
+
+    // ---------- HEADER (logo + title) ----------
+    const logoPath = path.join(__dirname, "public", "img", "logodental.png");
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 50, 50, { width: 80 });
+    }
+    doc.fontSize(18);
+    if (haveFonts) doc.font("Noto-Bold");
+    else doc.font("Helvetica-Bold");
+    doc.text("Invoice / Receipt", 0, 60, { align: "center" });
+    doc.moveDown(2);
+
+    // ---------- SOLD BY (left) & SOLD TO (right) ----------
+    const startY = doc.y;
+    const leftX = 50;
+    const rightX = 320;
+    const columnGapY = 0;
+
+    // Sold By
+    if (haveFonts) doc.font("Noto-Bold"); else doc.font("Helvetica-Bold");
+    doc.fontSize(12).text("Sold By:", leftX, startY);
+    if (haveFonts) doc.font("Noto-Regular"); else doc.font("Helvetica");
+    doc.fontSize(11).text("DentHub", leftX, doc.y + 3);
+    doc.text("DentHub Pvt Ltd", leftX);
+    doc.text("123, Business Park, Mumbai, India", leftX);
+    doc.text("GSTIN: XXYYZZ1234A1Z9", leftX);
+
+    // Sold To
+    const soldToY = startY;
+    if (haveFonts) doc.font("Noto-Bold"); else doc.font("Helvetica-Bold");
+    doc.fontSize(12).text("Sold To:", rightX, soldToY);
+    if (haveFonts) doc.font("Noto-Regular"); else doc.font("Helvetica");
+    doc.fontSize(11);
+    const name = order.address?.name || "N/A";
+    const contact = order.address?.contactNumber || "N/A";
+    const email = order.userEmail || "N/A";
+    const addr = order.address ? `${order.address.fullAddress}, ${order.address.city}, ${order.address.pincode}` : "N/A";
+    doc.text(`Name: ${name}`, rightX, doc.y + columnGapY);
+    doc.text(`Contact: ${contact}`, rightX);
+    doc.text(`Email: ${email}`, rightX);
+    doc.text(`Address: ${addr}`, rightX);
+    
+
+    doc.moveDown(2);
+
+    // ---------- ORDER INFO ----------
+    if (haveFonts) doc.font("Noto-Bold"); else doc.font("Helvetica-Bold");
+    doc.fontSize(12).text("Order Details:", leftX);
+    if (haveFonts) doc.font("Noto-Regular"); else doc.font("Helvetica");
+    doc.fontSize(11);
+    doc.text(`Order ID: ${order._id}`, leftX, doc.y + 3);
+    doc.text(`Order Date: ${new Date(order.createdAt).toLocaleString()}`, leftX);
+    doc.text(`Payment Status: ${order.paystatus}`, leftX);
+    doc.moveDown(1);
+
+    // ---------- ITEMS TABLE ----------
+    doc.moveDown(0.5);
+    if (haveFonts) doc.font("Noto-Bold"); else doc.font("Helvetica-Bold");
+    doc.fontSize(12).text("Order Items:", leftX);
+    doc.moveDown(0.3);
+
+    const tableTop = doc.y;
+    const marginLeft = 50;
+    const tableWidth = 500;
+    const colSr = 50;
+    const colProduct = 90;
+    const colQty = 340;
+    const colPrice = 390;
+    const colSubtotal = 470;
+    const rowHeight = 20;
+
+    // DRAW HEADER ROW
+    doc.fontSize(11);
+    doc.font(haveFonts ? "Noto-Bold" : "Helvetica-Bold");
+    doc.rect(marginLeft, tableTop, tableWidth, rowHeight).fillAndStroke("#f3f3f3", "#cccccc");
+    doc.fillColor("#000000");
+    doc.text("Sr", marginLeft + 5, tableTop + 5, { width: colProduct - colSr - 5 });
+    doc.text("Product", colProduct, tableTop + 5);
+    doc.text("Qty", colQty, tableTop + 5);
+    doc.text(`Price (${rupee})`, colPrice, tableTop + 5);
+    doc.text(`Subtotal (${rupee})`, colSubtotal, tableTop + 5);
+
+    // rows
+    let y = tableTop + rowHeight;
+    doc.font(haveFonts ? "Noto-Regular" : "Helvetica");
+    doc.fontSize(10);
+
+    const pageBottom = doc.page.height - doc.page.margins.bottom - 50;
+
+    for (let i = 0; i < order.items.length; i++) {
+      if (y + rowHeight > pageBottom) {
+        doc.addPage();
+        y = doc.page.margins.top;
+      }
+
+      const item = order.items[i];
+      const productName = item.product ? item.product.productName : "Product Deleted";
+      const qty = item.quantity || 0;
+      const price = item.product ? item.product.price : 0;
+      const subtotal = price * qty;
+
+      // Draw row border
+      doc.rect(marginLeft, y, tableWidth, rowHeight).stroke();
+
+      // Product name may be long — wrap inside column width
+      const prodColWidth = colQty - colProduct - 5;
+      doc.text(String(i + 1), marginLeft + 5, y + 5);
+      doc.text(productName, colProduct, y + 5, { width: prodColWidth });
+      doc.text(String(qty), colQty, y + 5);
+      doc.text(`${rupee}${price}`, colPrice, y + 5);
+      doc.text(`${rupee}${subtotal}`, colSubtotal, y + 5);
+
+      y += rowHeight;
+    }
+
+    // ---------- TOTALS ----------
+    doc.moveTo(marginLeft, y + 5).lineTo(marginLeft + tableWidth, y + 5).stroke();
+    doc.fontSize(11);
+    if (haveFonts) doc.font("Noto-Bold"); else doc.font("Helvetica-Bold");
+    doc.text(`Product Total: ${rupee}${productTotal}`, marginLeft, y + 15, { align: "right", width: tableWidth - 20 });
+    doc.text(`Delivery Fee: ${rupee}${deliveryFee > 0 ? deliveryFee : 0}`, marginLeft, y + 35, { align: "right", width: tableWidth - 20 });
+    doc.text(`Order Total: ${rupee}${order.total}`, marginLeft, y + 55, { align: "right", width: tableWidth - 20 });
+
+    // ---------- FOOTER / THANK YOU ----------
+    doc.moveDown(5);
+    if (haveFonts) doc.font("Noto-Bold"); else doc.font("Helvetica-Bold");
+    doc.fillColor("#1f8d4c");
+    doc.fontSize(16);
+    doc.text(" Thank you for shopping with DentHub! ", { align: "center" });
+    doc.moveDown(0.5);
+    doc.fillColor("#000000");
+    doc.fontSize(11);
+    doc.font(haveFonts ? "Noto-Regular" : "Helvetica");
+    doc.text("We value your trust. If you have any questions about your order, contact our customer service.", { align: "center" });
+
+    doc.end();
+  } catch (err) {
+    console.error("Receipt error:", err);
+    res.status(500).send("Error generating receipt");
+  }
+});
+
+
+
+
+
+
+
+
+// app.get("/admin/order/receipt/:id", async (req, res) => {
+//   try {
+//     if (!req.user || req.user.role !== "admin") return res.redirect("/login");
+
+//     const order = await Order.findById(req.params.id)
+//       .populate("items.product")
+//       .populate("address")
+//       .lean();
+
+//     if (!order) return res.status(404).send("Order not found");
+
+//     let productTotal = 0;
+//     order.items.forEach(item => {
+//       if (item.product) productTotal += item.product.price * item.quantity;
+//     });
+
+//     const deliveryFee = order.total - productTotal;
+
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader("Content-Disposition", `inline; filename=receipt_${order._id}.pdf`);
+
+//     const doc = new PDFDocument({ margin: 50 });
+//     doc.pipe(res);
+
+//     // ---------- HEADER ----------
+//     const logoPath = path.join(__dirname, "public", "img", "logo.png");
+//     if (fs.existsSync(logoPath)) {
+//       doc.image(logoPath, 50, 45, { width: 80 });
+//     }
+//     doc.fontSize(20).text("Invoice / Receipt", 0, 50, { align: "center" });
+//     doc.moveDown(2);
+
+//     // ---------- SOLD BY / SOLD TO ----------
+//     const startY = doc.y;
+//     const colWidth = 250;
+
+//     // Sold By (left column)
+//     doc.fontSize(14).text("Sold By:", 50, startY, { underline: true });
+//     doc.fontSize(12).text("DentHub", 50, doc.y);
+//     doc.text("DentHub Pvt Ltd", 50, doc.y);
+//     doc.text("123, Business Park, Mumbai, India", 50, doc.y);
+//     doc.text("GSTIN: XXYYZZ1234A1Z9", 50, doc.y);
+
+//     // Sold To (right column)
+//     let rightX = 320;
+//     doc.fontSize(14).text("Sold To:", rightX, startY, { underline: true });
+//     doc.fontSize(12).text(`Name: ${order.address.name}`, rightX, doc.y);
+//     doc.text(`Contact: ${order.address.contactNumber}`, rightX, doc.y);
+//     doc.text(`Email: ${order.userEmail}`, rightX, doc.y);
+//     doc.text(`Address: ${order.address.fullAddress}, ${order.address.city}, ${order.address.pincode}`, rightX, doc.y);
+//     if (order.extrainfo) doc.text(`Extra Info: ${order.extrainfo}`, rightX, doc.y);
+
+//     doc.moveDown(2);
+
+//     // ---------- ORDER DETAILS ----------
+//     doc.fontSize(14).text("Order Details:", { underline: true });
+//     doc.fontSize(12).text(`Order ID: ${order._id}`);
+//     doc.text(`Order Date: ${order.createdAt.toDateString()}`);
+//     doc.text(`Payment Status: ${order.paystatus}`);
+//     doc.moveDown(2);
+
+//     // ---------- ITEMS TABLE ----------
+//     doc.fontSize(14).text("Items:", { underline: true });
+//     doc.moveDown(0.5);
+
+//     const tableTop = doc.y;
+//     const col1 = 50;
+//     const col2 = 100;
+//     const col3 = 300;
+//     const col4 = 380;
+//     const col5 = 460;
+
+//     // Header Row
+//     doc.rect(col1, tableTop, 500, 20).stroke();
+//     doc.font("Helvetica-Bold").fontSize(12);
+//     doc.text("Sr No", col1 + 5, tableTop + 5);
+//     doc.text("Product", col2 + 5, tableTop + 5);
+//     doc.text("Qty", col3 + 5, tableTop + 5);
+//     doc.text("Price (₹)", col4 + 5, tableTop + 5);
+//     doc.text("Subtotal (₹)", col5 + 5, tableTop + 5);
+
+//     // Rows
+//     let y = tableTop + 20;
+//     doc.font("Helvetica").fontSize(12);
+
+//     order.items.forEach((item, i) => {
+//       const subtotal = item.product ? item.product.price * item.quantity : 0;
+//       doc.rect(col1, y, 500, 20).stroke();
+//       doc.text(i + 1, col1 + 5, y + 5);
+//       doc.text(item.product ? item.product.productName.substring(0, 20) : "Deleted", col2 + 5, y + 5);
+//       doc.text(item.quantity, col3 + 5, y + 5);
+//       doc.text(item.product ? `₹${item.product.price}` : "N/A", col4 + 5, y + 5);
+//       doc.text(item.product ? `₹${subtotal}` : "N/A", col5 + 5, y + 5);
+//       y += 20;
+//     });
+
+//     doc.moveDown(2);
+
+//     // ---------- TOTALS ----------
+//     doc.fontSize(12).text(`Product Total: ₹${productTotal}`, { align: "right" });
+//     doc.text(`Delivery Fee: ₹${deliveryFee > 0 ? deliveryFee : 0}`, { align: "right" });
+//     doc.font("Helvetica-Bold").fontSize(14).text(`Order Total: ₹${order.total}`, { align: "right", underline: true });
+//     doc.moveDown(2);
+
+//     // ---------- FOOTER ----------
+//     doc.moveDown(1);
+//     doc.fontSize(16).fillColor("green").text(" Thank you for shopping with DentHub! ", { align: "center" });
+//     doc.fontSize(12).fillColor("black").text("We value your trust and look forward to serving you again.", { align: "center" });
+
+//     doc.end();
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send("Error generating receipt");
+//   }
+// });
 
 
 app.post("/admin/products/edit/:id",upload.single("img"), async (req, res) => {
