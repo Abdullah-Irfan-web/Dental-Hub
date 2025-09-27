@@ -751,8 +751,10 @@ app.get("/admin/add-product", (req, res) => {
 app.post("/admin/add-product", upload.single("img"), async (req, res) => {
   try {
    
-    const { productName,originalprice, price, totalStock, shortDescription, longDescription, category, information } = req.body;
+    const { productName,originalprice, price, totalStock, shortDescription, longDescription, category, top,information } = req.body;
 
+    
+   
     const newProduct = new product({
       productName,
       originalprice,
@@ -761,6 +763,7 @@ app.post("/admin/add-product", upload.single("img"), async (req, res) => {
       shortDescription,
       longDescription,
       category,
+      isTopSeller:top==="yes"?true:false,
       information,
       img: req.file ? req.file.path : "https://via.placeholder.com/150"
     });
@@ -1054,128 +1057,11 @@ app.get("/admin/order/receipt/:id", async (req, res) => {
 
 
 
-// app.get("/admin/order/receipt/:id", async (req, res) => {
-//   try {
-//     if (!req.user || req.user.role !== "admin") return res.redirect("/login");
-
-//     const order = await Order.findById(req.params.id)
-//       .populate("items.product")
-//       .populate("address")
-//       .lean();
-
-//     if (!order) return res.status(404).send("Order not found");
-
-//     let productTotal = 0;
-//     order.items.forEach(item => {
-//       if (item.product) productTotal += item.product.price * item.quantity;
-//     });
-
-//     const deliveryFee = order.total - productTotal;
-
-//     res.setHeader("Content-Type", "application/pdf");
-//     res.setHeader("Content-Disposition", `inline; filename=receipt_${order._id}.pdf`);
-
-//     const doc = new PDFDocument({ margin: 50 });
-//     doc.pipe(res);
-
-//     // ---------- HEADER ----------
-//     const logoPath = path.join(__dirname, "public", "img", "logo.png");
-//     if (fs.existsSync(logoPath)) {
-//       doc.image(logoPath, 50, 45, { width: 80 });
-//     }
-//     doc.fontSize(20).text("Invoice / Receipt", 0, 50, { align: "center" });
-//     doc.moveDown(2);
-
-//     // ---------- SOLD BY / SOLD TO ----------
-//     const startY = doc.y;
-//     const colWidth = 250;
-
-//     // Sold By (left column)
-//     doc.fontSize(14).text("Sold By:", 50, startY, { underline: true });
-//     doc.fontSize(12).text("DentHub", 50, doc.y);
-//     doc.text("DentHub Pvt Ltd", 50, doc.y);
-//     doc.text("123, Business Park, Mumbai, India", 50, doc.y);
-//     doc.text("GSTIN: XXYYZZ1234A1Z9", 50, doc.y);
-
-//     // Sold To (right column)
-//     let rightX = 320;
-//     doc.fontSize(14).text("Sold To:", rightX, startY, { underline: true });
-//     doc.fontSize(12).text(`Name: ${order.address.name}`, rightX, doc.y);
-//     doc.text(`Contact: ${order.address.contactNumber}`, rightX, doc.y);
-//     doc.text(`Email: ${order.userEmail}`, rightX, doc.y);
-//     doc.text(`Address: ${order.address.fullAddress}, ${order.address.city}, ${order.address.pincode}`, rightX, doc.y);
-//     if (order.extrainfo) doc.text(`Extra Info: ${order.extrainfo}`, rightX, doc.y);
-
-//     doc.moveDown(2);
-
-//     // ---------- ORDER DETAILS ----------
-//     doc.fontSize(14).text("Order Details:", { underline: true });
-//     doc.fontSize(12).text(`Order ID: ${order._id}`);
-//     doc.text(`Order Date: ${order.createdAt.toDateString()}`);
-//     doc.text(`Payment Status: ${order.paystatus}`);
-//     doc.moveDown(2);
-
-//     // ---------- ITEMS TABLE ----------
-//     doc.fontSize(14).text("Items:", { underline: true });
-//     doc.moveDown(0.5);
-
-//     const tableTop = doc.y;
-//     const col1 = 50;
-//     const col2 = 100;
-//     const col3 = 300;
-//     const col4 = 380;
-//     const col5 = 460;
-
-//     // Header Row
-//     doc.rect(col1, tableTop, 500, 20).stroke();
-//     doc.font("Helvetica-Bold").fontSize(12);
-//     doc.text("Sr No", col1 + 5, tableTop + 5);
-//     doc.text("Product", col2 + 5, tableTop + 5);
-//     doc.text("Qty", col3 + 5, tableTop + 5);
-//     doc.text("Price (₹)", col4 + 5, tableTop + 5);
-//     doc.text("Subtotal (₹)", col5 + 5, tableTop + 5);
-
-//     // Rows
-//     let y = tableTop + 20;
-//     doc.font("Helvetica").fontSize(12);
-
-//     order.items.forEach((item, i) => {
-//       const subtotal = item.product ? item.product.price * item.quantity : 0;
-//       doc.rect(col1, y, 500, 20).stroke();
-//       doc.text(i + 1, col1 + 5, y + 5);
-//       doc.text(item.product ? item.product.productName.substring(0, 20) : "Deleted", col2 + 5, y + 5);
-//       doc.text(item.quantity, col3 + 5, y + 5);
-//       doc.text(item.product ? `₹${item.product.price}` : "N/A", col4 + 5, y + 5);
-//       doc.text(item.product ? `₹${subtotal}` : "N/A", col5 + 5, y + 5);
-//       y += 20;
-//     });
-
-//     doc.moveDown(2);
-
-//     // ---------- TOTALS ----------
-//     doc.fontSize(12).text(`Product Total: ₹${productTotal}`, { align: "right" });
-//     doc.text(`Delivery Fee: ₹${deliveryFee > 0 ? deliveryFee : 0}`, { align: "right" });
-//     doc.font("Helvetica-Bold").fontSize(14).text(`Order Total: ₹${order.total}`, { align: "right", underline: true });
-//     doc.moveDown(2);
-
-//     // ---------- FOOTER ----------
-//     doc.moveDown(1);
-//     doc.fontSize(16).fillColor("green").text(" Thank you for shopping with DentHub! ", { align: "center" });
-//     doc.fontSize(12).fillColor("black").text("We value your trust and look forward to serving you again.", { align: "center" });
-
-//     doc.end();
-
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send("Error generating receipt");
-//   }
-// });
-
 
 app.post("/admin/products/edit/:id",upload.single("img"), async (req, res) => {
   try {
     if (!req.user || req.user.role!=="admin") return res.redirect("/login");
-    const { productName,originalprice, price, totalStock, shortDescription, longDescription, category, information } = req.body;
+    const { productName,originalprice, price, totalStock, shortDescription, longDescription, category, top, information } = req.body;
 
     let updateData = {
       productName,
@@ -1185,6 +1071,7 @@ app.post("/admin/products/edit/:id",upload.single("img"), async (req, res) => {
       shortDescription,
       longDescription,
       category,
+      isTopSeller:top==="yes"?true:false,
       information,
     };
 
