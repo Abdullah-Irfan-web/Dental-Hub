@@ -158,7 +158,7 @@
                         <% items.forEach(item => { %>
                         <tr>
                             <td class="align-middle"><img src="<%=item.product.img%>" alt="" style="width: 50px;"> <%=item.product.productName%></td>
-                            <td class="align-middle">₹<%=item.product.price%></td>
+                            <td class="align-middle">₹<%=item.product.price%> <del>₹<%=item.product.originalprice%></del> </td>
                             <td class="align-middle">
                                 <div class="input-group quantity mx-auto" style="width: 100px;">
                                     <div class="input-group-btn">
@@ -174,7 +174,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="align-middle">₹<%=item.product.price*item.quantity%></td>
+                            <td class="align-middle">₹<%=item.product.price*item.quantity%> <del>₹<%=item.product.originalprice*item.quantity%></del> </td>
                             <td class="align-middle"><a href="/remove/<%= item.product.id%>" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></td>
                         </tr>
                         <%})%>
@@ -205,7 +205,7 @@
                     <div class="pt-2">
                         <div class="d-flex justify-content-between mt-2">
                             <h5>Total</h5>
-                            <h5>₹<%=total%></h5>
+                            <h5>₹<%=total%> <del class="ml-1">₹<%=org%></h5>
                         </div>
                        <%if(currentUser!==""){%>
                         <a href="/addaddress" class="btn btn-block btn-primary font-weight-bold my-3 py-3">Proceed To Address</a>

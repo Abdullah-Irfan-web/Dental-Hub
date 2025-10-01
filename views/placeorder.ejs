@@ -160,7 +160,7 @@
                         <% items.forEach(item => { %>
                         <tr>
                             <td class="align-middle"><img src="<%=item.product.img%>" alt="" style="width: 50px;"> <%=item.product.productName%></td>
-                            <td class="align-middle">₹<%=item.product.price%></td>
+                            <td class="align-middle">₹<%=item.product.price%> <del>₹<%=item.product.originalprice%></del></td>
                             <td class="align-middle">
                                 <div class="input-group quantity mx-auto" style="width: 100px;">
                                     
@@ -168,7 +168,7 @@
                                     
                                 </div>
                             </td>
-                            <td class="align-middle">₹<%=item.product.price*item.quantity%></td>
+                            <td class="align-middle">₹<%=item.product.price*item.quantity%> <del>₹<%=item.product.originalprice*item.quantity%></td>
                                </tr>
                         <%})%>
                     </tbody>
@@ -188,7 +188,7 @@
                     <div class="border-bottom pb-2">
                         <div class="d-flex justify-content-between mb-3">
                             <h6>Subtotal</h6>
-                            <h6>₹<%=total%></h6>
+                            <h6>₹<%=total%> </h6>
                         </div>
                         <div class="d-flex justify-content-between">
                             <h6 class="font-weight-medium">Shipping</h6>
@@ -198,7 +198,7 @@
                     <div class="pt-2">
                         <div class="d-flex justify-content-between mt-2">
                             <h5>Total</h5>
-                            <h5>₹<%=total+deliveryFee%></h5>
+                            <h5>₹<%=total+deliveryFee%> <del class="ml-1">₹<%=org+deliveryFee%></h5>
                         </div>
                         <div class="form-group mt-3">
                             <label for="extrainfo">Extra Info (optional)</label>
@@ -211,6 +211,7 @@
                             <input type="radio" name="paymethod" value="cod" checked> Cash on Delivery <br>
                             <input type="radio" name="paymethod" value="online"> Online Payment
                           </div>
+                          
                       <button id="payBtn" class="btn btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
                         
                        

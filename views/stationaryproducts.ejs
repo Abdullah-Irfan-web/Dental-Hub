@@ -155,7 +155,7 @@
                         <div class="text-center py-4">
                             <a class="h6 text-decoration-none " href="/detail/<%= product._id %>"><%=product.productName%></a>
                             <div class="d-flex align-items-center justify-content-center mt-2">
-                                <h5>₹<%=product.price%></h5><h6 class="text-muted ml-2"><del>₹<%=product.originalprice%></del> <span class="text-primary ml-1"> <%=(((product.originalprice-product.price)/product.originalprice)*100).toFixed(2) %> % <i class="fa fa-arrow-down"></i></span></h6>
+                                <h5>₹<%=product.price%></h5><h6 class="text-muted ml-2"><del>₹<%=product.originalprice%></del> <span style="color: red;" class="ml-1"> <%=(((product.originalprice-product.price)/product.originalprice)*100).toFixed(2) %> % <i class="fa fa-arrow-down"></i></span></h6>
                             </div>
                             <div class="d-flex align-items-center justify-content-center mb-1">
                                 <small class="fa fa-star text-primary mr-1"></small>

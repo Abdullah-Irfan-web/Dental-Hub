@@ -185,6 +185,7 @@ app.get("/cart", async (req, res) => {
     console.log(req.session.cart);
     let items = [];
     let total=0;
+    let org=0;
     if (req.user) {
       // ✅ Logged in → check DB cart
       let dbCart = await Cart.findOne({ userEmail: req.user.useremail });
@@ -223,11 +224,12 @@ app.get("/cart", async (req, res) => {
             : await product.findById(item.product);
 
         total += productt.price * item.quantity;
+        org+=productt.originalprice  * item.quantity;
     }
     }
     // Render cart page
    
-    res.render('cart', { items:items,currentUser:currentUser,total:total });
+    res.render('cart', { items:items,currentUser:currentUser,total:total,org:org });
 
   } catch (err) {
     console.error("Cart error:", err);
@@ -459,6 +461,7 @@ app.get("/placeorder", async (req, res) => {
   try {
     let items = [];
   let total=0;
+  let org=0;
     let dbCart = await Cart.findOne({ userEmail: req.user.useremail });
 
     // If DB cart doesn't exist, create it
@@ -481,6 +484,7 @@ app.get("/placeorder", async (req, res) => {
             : await product.findById(item.product);
 
         total += productt.price * item.quantity;
+        org+=productt.originalprice * item.quantity;
     }
     }
     let deliveryFee = 0;
@@ -490,10 +494,15 @@ app.get("/placeorder", async (req, res) => {
       }
       
     }
+    else{
+      if(total<2000){
+        deliveryFee=25;
+      }
+    }
   
     res.render("placeorder", {
       deliveryFee: deliveryFee,
-      items:items,currentUser:currentUser,total:total
+      items:items,currentUser:currentUser,total:total,org:org
     });
 
   }
@@ -538,6 +547,11 @@ app.get("/orderconfirm", async (req, res) => {
         total = total+90;
       }
       
+    }
+    else{
+      if(total<2000){
+        total=total+25;
+      }
     }
     // create order
     const order = new Order({
@@ -811,6 +825,27 @@ app.get("/admin/products", async (req, res) => {
   }
 });
 
+// const ExcelJS = require("exceljs");
+// app.get('/excel',async (req,res)=>{
+//   const pro=await product.find().lean();
+
+//   const workbook=new ExcelJS.Workbook();
+//   const worksheet = workbook.addWorksheet("Products");
+//   worksheet.columns = [
+//     { header: "Product Name", key: "productName", width: 30 },
+//     { header: "Price", key: "price", width: 15 },
+//     { header: "Original Price", key: "originalprice", width: 15 },
+//     { header: "Stock", key: "totalStock", width: 15 },
+//     { header: "Category", key: "category", width: 20 },
+//   ];
+
+//   pro.forEach(p => worksheet.addRow(p));
+
+//   // Save to file
+//   await workbook.xlsx.writeFile("products.xlsx");
+
+//   console.log("✅ Exported products.xlsx");
+// })
 
 // DELETE product by ID
 app.get("/admin/products/delete/:id", async (req, res) => {
