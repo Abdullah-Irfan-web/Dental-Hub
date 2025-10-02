@@ -494,11 +494,7 @@ app.get("/placeorder", async (req, res) => {
       }
       
     }
-    else{
-      if(total<2000){
-        deliveryFee=25;
-      }
-    }
+  
   
     res.render("placeorder", {
       deliveryFee: deliveryFee,
@@ -548,11 +544,7 @@ app.get("/orderconfirm", async (req, res) => {
       }
       
     }
-    else{
-      if(total<2000){
-        total=total+25;
-      }
-    }
+   
     // create order
     const order = new Order({
       userEmail: req.user.useremail,
@@ -967,8 +959,7 @@ app.get("/admin/order/receipt/:id", async (req, res) => {
     if (haveFonts) doc.font("Noto-Regular"); else doc.font("Helvetica");
     doc.fontSize(11).text("DentHub", leftX, doc.y + 3);
     doc.text("DentHub Pvt Ltd", leftX);
-    doc.text("123, Business Park, Mumbai, India", leftX);
-    doc.text("GSTIN: XXYYZZ1234A1Z9", leftX);
+    
 
     // Sold To
     const soldToY = startY;
