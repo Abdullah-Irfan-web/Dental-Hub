@@ -1194,17 +1194,18 @@ app.post("/forgot", async (req, res) => {
   
   await Otp.create({ email, otp: otpCode });
 
+ 
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "abd.irfankhan7007@gmail.com",
-      pass: "ducvajxuizftpltm" // use App Password, not Gmail password
+      user: "dentalhub7718@gmail.com",
+      pass: "cddxntvuevdcuyvh " // use App Password, not Gmail password
     }
   });
   // send email
   try {
     await transporter.sendMail({
-      from: "abd.irfankhan7007@gmail.com",
+      from: "dentalhub7718@gmail.com",
       to: email,
       subject: "Password Reset OTP",
       text: `Your OTP for password reset is: ${otpCode}`
