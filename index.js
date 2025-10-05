@@ -488,7 +488,7 @@ app.get("/placeorder", async (req, res) => {
     }
     }
     let deliveryFee = 0;
-    if (!address.city || address.city.toLowerCase() !== "rohtak") {
+    if (!address.city || address.city.toLowerCase().trim() !== "rohtak") {
       if(total<2000){
         deliveryFee = 90;
       }
@@ -538,7 +538,7 @@ app.get("/orderconfirm", async (req, res) => {
       total += item.product.price * item.quantity;
     }
    
-    if (!address.city || address.city.toLowerCase() !== "rohtak") {
+    if (!address.city || address.city.toLowerCase().trim() !== "rohtak") {
       if(total<2000){
         total = total+90;
       }
