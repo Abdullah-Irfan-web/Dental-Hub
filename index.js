@@ -15,6 +15,8 @@ const nodemailer = require("nodemailer");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 app.set('views',path.join(__dirname,'views'));
 app.set('view engine','ejs');
 app.use(express.static('public'));
@@ -47,7 +49,10 @@ db.once('open', function () {
 });
 
 
-
+const razorpay = new Razorpay({
+  key_id: process.env.LIVE_KEY,
+  key_secret: process.env.LIVE_SECRET,
+});
   
 
 passport.use(new LocalStrategy({usernameField:'email'},(email,password,done)=>{
@@ -74,8 +79,10 @@ passport.use(new LocalStrategy({usernameField:'email'},(email,password,done)=>{
 app.use(session({
     secret:"Node",
     resave:true,
-    saveUninitialized:true
+    saveUninitialized:true,
+   
 }))
+
 
 
 
@@ -498,7 +505,7 @@ app.get("/placeorder", async (req, res) => {
   
     res.render("placeorder", {
       deliveryFee: deliveryFee,
-      items:items,currentUser:currentUser,total:total,org:org
+      items:items,currentUser:currentUser,total:total,org:org,razorpayKeyId: process.env.LIVE_KEY
     });
 
   }
@@ -513,7 +520,50 @@ app.get("/placeorder", async (req, res) => {
 });
 
 
+app.post("/create-order", async (req, res) => {
+  const { amount } = req.body; // total in rupees
+
+  const options = {
+    amount: amount * 100, // Razorpay works in paise
+    currency: "INR",
+    receipt: "order_rcptid_" + Math.floor(Math.random() * 1000),
+  };
+
+  try {
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (err) {
+    console.error("Order create error:", err);
+    res.status(500).send("Error creating order");
+  }
+});
+
+app.post("/verify-payment", (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  const sign = razorpay_order_id + "|" + razorpay_payment_id;
+  const expectedSign = crypto
+    .createHmac("sha256", process.env.LIVE_SECRET)
+    .update(sign.toString())
+    .digest("hex");
+
+  if (razorpay_signature === expectedSign) {
+    // Payment verified
+    console.log("if "+ razorpay_signature,+" "+expectedSign);
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+    console.log("else "+ razorpay_signature,+" "+expectedSign);
+  }
+});
+
+
+
+
 app.get("/orderconfirm", async (req, res) => {
+
+  console.log("===== ORDER CONFIRM ROUTE HIT =====");
+  console.log("User session:", req.user);
   if (!req.user) return res.redirect("/login");
   let currentUser=req.user;
   if(currentUser===undefined){
@@ -521,10 +571,13 @@ app.get("/orderconfirm", async (req, res) => {
   }
   try {
     let total=0;
-    if (!req.user) return res.redirect("/login");
-
+    
     // fetch address
+    console.log("payyyyyy")
+    console.log(req.user.useremail)
     const address = await Address.findOne({ userEmail: req.user.useremail });
+    console.log(address);
+   
     if (!address) return res.redirect("/addaddress");
 
     // fetch cart
@@ -959,6 +1012,8 @@ app.get("/admin/order/receipt/:id", async (req, res) => {
     if (haveFonts) doc.font("Noto-Regular"); else doc.font("Helvetica");
     doc.fontSize(11).text("DentHub", leftX, doc.y + 3);
     doc.text("DentHub Pvt Ltd", leftX);
+    doc.text("GSTIN: 09ASNPH5867P1ZO", leftX);
+
     
 
     // Sold To
