@@ -361,18 +361,18 @@ const searchBoxes = document.querySelectorAll(".searchBox");
       window.location.href = `/orderconfirm?paystatus=cod&extrainfo=${encodeURIComponent(extraInfo)}`;
     } else {
       // Online Payment with Razorpay
-      // const amount = "<%= total + deliveryFee %>";
+       const amount = "<%= total + deliveryFee %>";
       const response = await fetch("/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({  amount: 1 })
+        body: JSON.stringify({  amount: amount })
       });
 
       const order = await response.json();
 
       var options = {
         "key": "<%= razorpayKeyId %>", // replace with real key
-        "amount": 1,
+        "amount": amount,
         "currency": "INR",
         "name": "Dent Hub",
         "description": "Order Payment",
